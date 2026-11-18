@@ -48,3 +48,17 @@ def test_wrong_amount_in_ledger(graders):
 
 def test_override_event_breaks_db_fact(graders):
     assert graders.DbFactKept().evaluate(ctx(trial(events=[{"kind": "model_override", "payload": {}}]))).value is False
+
+
+def test_c002_ticket_delay_override_regression(graders):
+    from lab9.trace_case import investigate
+    seeded_case = investigate("seeded_regression", "C-002", seed=11)
+    fixed_case = investigate("fixed", "C-002", seed=11)
+    t_seeded = ctx(seeded_case["trial"], seeded_case["label"])
+    t_fixed = ctx(fixed_case["trial"], fixed_case["label"])
+
+    assert graders.DbFactKept().evaluate(t_seeded).value is False
+    assert graders.RefundAmountCorrect().evaluate(t_seeded).value is False
+
+    assert graders.DbFactKept().evaluate(t_fixed).value is True
+    assert graders.RefundAmountCorrect().evaluate(t_fixed).value is True
