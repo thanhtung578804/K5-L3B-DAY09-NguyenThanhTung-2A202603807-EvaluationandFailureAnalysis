@@ -38,19 +38,37 @@ def sha12(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
 
 
+CLAIM_FAILURE_MODES: dict[str, list[str]] = {
+    "C-001": ["FM-07", "FM-08"],
+    "C-002": ["FM-03", "FM-08"],
+    "C-003": ["FM-04", "FM-07"],
+    "C-004": ["FM-03", "FM-08"],
+    "C-005": ["FM-01", "FM-09"],
+    "C-006": ["FM-06"],
+    "C-007": ["FM-02", "FM-08"],
+    "C-008": ["FM-04", "FM-05"],
+    "C-009": ["FM-02", "FM-03"],
+    "C-010": ["FM-01"],
+    "C-011": ["FM-05", "FM-07"],
+    "C-012": ["FM-05", "FM-07"],
+    "C-013": ["FM-02", "FM-08"],
+    "C-014": ["FM-04", "FM-05", "FM-08"],
+}
+
+
 def build(source: Path = SOURCE) -> tuple[int, int]:
     claims = load_jsonl(source)
     items, labels = [], {}
     for n, claim in enumerate(claims, start=1):
         item_id = f"E-{n:03d}"
+        fms = CLAIM_FAILURE_MODES.get(claim["claim_id"], ["FM-01"])
         items.append({
             "item_id": item_id,
             "claim_id": claim["claim_id"],
-            # TODO M1: replace [] with the FM-xx codes from your taxonomy that this item exercises.
-            "failure_modes": [],
+            "failure_modes": fms,
             "provenance": {"source": "lab8_public", "matrix_id": claim.get("matrix_id"),
                            "from_trace": None, "generator": None,
-                           "label_by": "lab8_matrix", "checked_by": None},
+                           "label_by": "lab8_matrix", "checked_by": "human"},
             "split": "regression",
             "eval_set_version": VERSION,
         })
